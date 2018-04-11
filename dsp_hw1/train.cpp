@@ -53,13 +53,13 @@ int main()
 		}
 	}
 	
-	FILE *f;
-	f = fopen("test.txt", "w");
-	for(vector< vector<char> >::iterator it=seq[0].begin(); it != seq[0].end(); ++it)
-	{
-		for(vector<char>::iterator it2=(*it).begin(); it2 != (*it).end(); ++it2)
-			fprintf(f, "%c ", *it2);
-		fprintf(f, "\n");
-	}
+	// FILE *f;
+	// f = fopen("test.txt", "w");
+	// for(vector< vector<char> >::iterator it=seq[0].begin(); it != seq[0].end(); ++it)
+	// {
+	// 	for(vector<char>::iterator it2=(*it).begin(); it2 != (*it).end(); ++it2)
+	// 		fprintf(f, "%c ", *it2);
+	// 	fprintf(f, "\n");
+	// }
 
 }
