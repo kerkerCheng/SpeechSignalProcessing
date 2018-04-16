@@ -100,15 +100,19 @@ int main()
 	}
 
 	/* Initialize */
-
-	int iteration = 50;
+	int iteration = 500;
 	cout << "iteration = " << iteration << endl;
 
 	/* Training */
 	// for(int i=0; i<MD_NUM; i++)
+	for(int t=0; t<10; t++)
+	{
+		cout << "epoch = " << t << endl;
 		update_hmm(&hmm[0], seq[0]);
+		dumpHMM(stderr, &hmm[0]);
+		cout << "------------------------------------" << endl;
+	}
 	
-	dumpHMM(stderr, &hmm[0]);
 
 	// FILE *f;
 	// f = fopen("test.txt", "w");
@@ -210,7 +214,7 @@ void update_hmm(HMM *hmm, vector< vector<int> >& seq)
 	vector<vector<vector<double> > > gamma(sample_size, vector<vector<double> >(STATE_NUM, vector<double>(seq_len)));
 	vector<vector<vector<vector<double> > > > epsilon(sample_size, vector<vector<vector<double> > >(seq_len, vector<vector<double> >(STATE_NUM, vector<double>(STATE_NUM))));
 
-	for(int i=0; i<10; i++)
+	for(int i=0; i<sample_size; i++)
 	{
 		alpha_calculate(alpha[i], seq[i], hmm);
 		beta_calcaulate(beta[i], seq[i], hmm);
