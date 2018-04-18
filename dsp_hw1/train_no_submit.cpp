@@ -38,74 +38,94 @@ void print_vec(vector< vector<double> >& vec);
 void print_arr(double **arr, int row, int col);
 
 
-int main(int argc, char *argv[])
+int main()
 {
 	HMM hmm_initial;
-	HMM hmm;
-	loadHMM(&hmm_initial, argv[2]);
+	HMM hmm[MD_NUM];
+	loadHMM(&hmm_initial, "model_init.txt");
 
-	hmm = hmm_initial;
+	for(int i=0; i<5; i++)
+		hmm[i] = hmm_initial;
 
-	ifstream seq_file;
-	seq_file.open(argv[3]);
-
-	vector< vector<int> > seq;
-	string line;
-	seq.reserve(9000);
-	while(getline(seq_file, line))
+	ifstream seq_files[MD_NUM];
+	for(int i=0; i<MD_NUM; i++)
 	{
-		istringstream iss(line);
-		char ch;
-		vector<int> one_line;
-		while(iss >> ch)
-		{
-			int ch_int=0;
-			switch(ch)
-			{
-				case 'A':
-					ch_int=0;
-					break;
-				case 'B':
-					ch_int=1;
-					break;
-				case 'C':
-					ch_int=2;
-					break;
-				case 'D':
-					ch_int=3;
-					break;
-				case 'E':
-					ch_int=4;
-					break;
-				case 'F':
-					ch_int=5;
-					break;
-			}
-			one_line.push_back(ch_int);
-		}
-		seq.push_back(one_line);
+		stringstream filename;
+		filename << "seq_model_0" << (i+1) << ".txt";
+		string tmp = filename.str();
+		seq_files[i].open(tmp.c_str());
 	}
 
+	vector< vector< vector<int> > > seq;
+	string line;
+	seq.resize(MD_NUM);
+
+	for(int i=0; i<MD_NUM; i++)
+	{
+		seq[i].reserve(9000);
+		while(getline(seq_files[i], line))
+		{
+			istringstream iss(line);
+			char ch;
+			vector<int> one_line;
+			while(iss >> ch)
+			{
+				int ch_int=0;
+				switch(ch)
+				{
+					case 'A':
+						ch_int=0;
+						break;
+					case 'B':
+						ch_int=1;
+						break;
+					case 'C':
+						ch_int=2;
+						break;
+					case 'D':
+						ch_int=3;
+						break;
+					case 'E':
+						ch_int=4;
+						break;
+					case 'F':
+						ch_int=5;
+						break;
+				}
+				one_line.push_back(ch_int);
+			}
+			seq[i].push_back(one_line);
+		}
+	}
 
 	/* Initialize */
-	int iteration = atoi(argv[1]);
+	int iteration = 200;
 	cout << "iteration = " << iteration << endl;
 
 
 	/* Training */
-	for(int t=0; t<iteration; t++)
+	for(int i=0; i<MD_NUM; i++)
 	{
-		cout << "epoch = " << (t+1) << endl;
-		update_hmm(&hmm, seq);
-		dumpHMM(stderr, &hmm);
-		cout << "------------------------------------" << endl;
+		for(int t=0; t<iteration; t++)
+		{
+			cout << "epoch = " << (t+1) << " ; model = " << (i+1) << endl;
+			update_hmm(&hmm[i], seq[i]);
+			dumpHMM(stderr, &hmm[i]);
+			cout << "------------------------------------" << endl;
+		}
 	}
 
 	/* Saving the Model */
-	FILE* fp;
-	fp = fopen(argv[4], "w");
-	dumpHMM(fp, &hmm);
-	fclose(fp);
+	for(int i=0; i<MD_NUM; i++)
+	{
+		FILE* fp;
+		stringstream filename;
+		filename << "model_0" << (i+1) << ".txt";
+		string tmp = filename.str();
+		fp = fopen(tmp.c_str(), "w");
+		dumpHMM(fp, &hmm[i]);
+		fclose(fp);
+	}
 
 
 	// FILE *f;

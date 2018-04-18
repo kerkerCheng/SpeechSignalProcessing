@@ -31,61 +31,51 @@ using namespace std;
 double viterbi(double** del, HMM* hmm, vector<int>& seq);
 void print_arr(double **arr, int row, int col);
 
-int main()
+int main(int argc, char *argv[])
 {
-	ifstream seq_files[TEST_NUM];
-	for(int i=0; i<TEST_NUM; i++)
-	{
-		stringstream filename;
-		filename << "testing_data" << (i+1) << ".txt";
-		string tmp = filename.str();
-		seq_files[i].open(tmp.c_str());
-	}
+	ifstream seq_file;
+	seq_file.open(argv[2]);
 
-	vector< vector< vector<int> > > seq;
+	vector< vector<int> > seq;
 	string line;
-	seq.resize(TEST_NUM);
 
-	for(int i=0; i<TEST_NUM; i++)
+	while(getline(seq_file, line))
 	{
-		seq[i].reserve(9000);
-		while(getline(seq_files[i], line))
+		istringstream iss(line);
+		char ch;
+		vector<int> one_line;
+		while(iss >> ch)
 		{
-			istringstream iss(line);
-			char ch;
-			vector<int> one_line;
-			while(iss >> ch)
+			int ch_int=0;
+			switch(ch)
 			{
-				int ch_int=0;
-				switch(ch)
-				{
-					case 'A':
-						ch_int=0;
-						break;
-					case 'B':
-						ch_int=1;
-						break;
-					case 'C':
-						ch_int=2;
-						break;
-					case 'D':
-						ch_int=3;
-						break;
-					case 'E':
-						ch_int=4;
-						break;
-					case 'F':
-						ch_int=5;
-						break;
-				}
-				one_line.push_back(ch_int);
+				case 'A':
+					ch_int=0;
+					break;
+				case 'B':
+					ch_int=1;
+					break;
+				case 'C':
+					ch_int=2;
+					break;
+				case 'D':
+					ch_int=3;
+					break;
+				case 'E':
+					ch_int=4;
+					break;
+				case 'F':
+					ch_int=5;
+					break;
 			}
-			seq[i].push_back(one_line);
+			one_line.push_back(ch_int);
 		}
+		seq.push_back(one_line);
 	}
+	
 
 	HMM hmm[5];
-	load_models("modellist.txt", hmm, 5);
+	load_models(argv[1], hmm, 5);
 	// dump_models(hmm, 5);
 
 
@@ -94,31 +84,25 @@ int main()
 	for(int i=0; i<STATE_NUM; i++)
 		del[i] = new double[SEQ_NUM];
 
-	for(int i=0; i<TEST_NUM; i++)
-	{
-		FILE* fp;
-		stringstream filename;
-		filename << "result" << (i+1) << ".txt";
-		string tmp = filename.str();
-		fp = fopen(tmp.c_str(), "w");
+	FILE* fp_result;
+	fp_result = fopen(argv[3], "w");
 
-		for(vector<vector<int> >::iterator it1 = seq[i].begin(); it1 != seq[i].end(); ++it1)
+	for(vector<vector<int> >::iterator it1 = seq.begin(); it1 != seq.end(); ++it1)
+	{
+		double likelihood = 0;
+		int which_model;
+		for(int md=0; md<MD_NUM; md++)
 		{
-			double likelihood = 0;
-			int which_model;
-			for(int md=0; md<MD_NUM; md++)
+			double tmp = viterbi(del, &hmm[md], (*it1));
+			if(tmp>likelihood)
 			{
-				double tmp = viterbi(del, &hmm[md], (*it1));
-				if(tmp>likelihood)
-				{
-					likelihood = tmp;
-					which_model = md+1;
-				}
+				likelihood = tmp;
+				which_model = md+1;
 			}
-			fprintf(fp, "model_0%d.txt %e\n", which_model, likelihood);
 		}
-		fclose(fp);
+		fprintf(fp_result, "model_0%d.txt %e\n", which_model, likelihood);
 	}
+	fclose(fp_result);
 }
 
 double viterbi(double **del, HMM* hmm, vector<int>& seq)
