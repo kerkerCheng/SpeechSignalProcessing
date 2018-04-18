@@ -1,9 +1,9 @@
 .PHONY: all clean
-
+CC=gcc
 CFLAGS+=
-LDFLAGS+=-lm     # link to math library
+LDFLAGS+=-lm -std=c++11    # link to math library
 
-TARGET=test_hmm
+TARGET=train test
 
 all: $(TARGET)
 # type make/make all to compile test_hmm
