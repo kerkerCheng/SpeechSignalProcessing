@@ -32,7 +32,6 @@ void update_hmm(HMM *hmm, vector< vector<int> >& seq);
 // void update_a(double **a_bar, double ***ep, double **ga, vector<int>& seq, HMM *hmm);
 void update_pi(double **ga, HMM *hmm);
 void update_observation(double **ga, HMM *hmm, vector<int>& seq);
-double viterbi(double** del, HMM* hmm, vector<int>& seq);
 double array_sum(double **arr, int row, int col);
 double vector_sum(vector< vector<double> >& vec);
 void print_vec(vector< vector<double> >& vec);
@@ -100,19 +99,34 @@ int main()
 	}
 
 	/* Initialize */
-	int iteration = 500;
+	int iteration = 1;
 	cout << "iteration = " << iteration << endl;
 
+
 	/* Training */
-	// for(int i=0; i<MD_NUM; i++)
-	for(int t=0; t<10; t++)
+	for(int i=0; i<MD_NUM; i++)
 	{
-		cout << "epoch = " << t << endl;
-		update_hmm(&hmm[0], seq[0]);
-		dumpHMM(stderr, &hmm[0]);
-		cout << "------------------------------------" << endl;
+		for(int t=0; t<iteration; t++)
+		{
+			cout << "epoch = " << (t+1) << " ; model = " << (i+1) << endl;
+			update_hmm(&hmm[i], seq[i]);
+			dumpHMM(stderr, &hmm[i]);
+			cout << "------------------------------------" << endl;
+		}
 	}
-	
+
+	/* Saving the Model */
+	for(int i=0; i<MD_NUM; i++)
+	{
+		FILE* fp;
+		stringstream filename;
+		filename << "model_0" << (i+1) << ".txt";
+		string tmp = filename.str();
+		fp = fopen(tmp.c_str(), "w");
+		dumpHMM(fp, &hmm[i]);
+		fclose(fp);
+	}
+
 
 	// FILE *f;
 	// f = fopen("test.txt", "w");
@@ -212,7 +226,7 @@ void update_hmm(HMM *hmm, vector< vector<int> >& seq)
 	vector<vector<vector<double> > > alpha(sample_size, vector<vector<double> >(STATE_NUM, vector<double>(seq_len)));
 	vector<vector<vector<double> > > beta(sample_size, vector<vector<double> >(STATE_NUM, vector<double>(seq_len)));
 	vector<vector<vector<double> > > gamma(sample_size, vector<vector<double> >(STATE_NUM, vector<double>(seq_len)));
-	vector<vector<vector<vector<double> > > > epsilon(sample_size, vector<vector<vector<double> > >(seq_len, vector<vector<double> >(STATE_NUM, vector<double>(STATE_NUM))));
+	vector<vector<vector<vector<double> > > > epsilon(sample_size, vector<vector<vector<double> > >((seq_len-1), vector<vector<double> >(STATE_NUM, vector<double>(STATE_NUM))));
 
 	for(int i=0; i<sample_size; i++)
 	{
@@ -227,6 +241,7 @@ void update_hmm(HMM *hmm, vector< vector<int> >& seq)
 
 	for(int i=0; i<sample_size; i++)
 	{
+		// print_vec(gamma[i]);
 		for(int state=0; state<STATE_NUM; state++)
 		{
 			sum_pi[state] += gamma[i][state][0];
@@ -247,7 +262,7 @@ void update_hmm(HMM *hmm, vector< vector<int> >& seq)
 			double nume=0;
 			for(int s=0; s<sample_size; s++)
 			{
-				for(int t=0; t<(seq[s].size()-1); t++)
+				for(int t=0; t<(seq[s].size()-2); t++)
 				{
 					deno += gamma[s][i][t];
 					nume += epsilon[s][t][i][j];
@@ -296,41 +311,6 @@ void update_hmm(HMM *hmm, vector< vector<int> >& seq)
 			hmm->observation[i][j] = nume[j]/deno;
 	}
 	/* UPDATE OBSERVATION END */
-}
-
-double viterbi(double **del, HMM* hmm, vector<int>& seq)
-{
-	int seq_len = seq.size();
-	for(int i=0; i<STATE_NUM; i++)
-		del[i][0] = hmm->initial[i] * hmm->observation[i][seq[0]];
-
-	for(int t=1; t<seq_len; t++)
-	{
-		for(int j=0; j<STATE_NUM; j++)
-		{
-			double max = 0;
-			int max_state = 0;
-			for(int i=0; i<STATE_NUM; i++)
-			{
-				double tmp = del[i][t-1] * hmm->transition[i][j];
-				if(t > max)
-				{
-					max = tmp;
-					max_state = i;
-				}
-			}
-			del[j][t] = max * hmm->observation[j][seq[t]];
-		}
-	}
-
-	double p_star = 0;
-	for(int i=0; i<STATE_NUM; i++)
-	{
-		if(del[i][seq_len-1] > p_star)
-			p_star = del[i][seq_len-1];
-	}
-	
-	return p_star;
 }
 
 void update_pi(double **ga, HMM *hmm)
