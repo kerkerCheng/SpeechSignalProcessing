@@ -99,7 +99,7 @@ int main()
 	}
 
 	/* Initialize */
-	int iteration = 200;
+	int iteration = 20;
 	cout << "iteration = " << iteration << endl;
 
 
@@ -110,8 +110,8 @@ int main()
 		{
 			cout << "epoch = " << (t+1) << " ; model = " << (i+1) << endl;
 			update_hmm(&hmm[i], seq[i]);
-			dumpHMM(stderr, &hmm[i]);
-			cout << "------------------------------------" << endl;
+			// dumpHMM(stderr, &hmm[i]);
+			// cout << "------------------------------------" << endl;
 		}
 	}
 

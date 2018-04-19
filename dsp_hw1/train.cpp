@@ -97,8 +97,8 @@ int main(int argc, char *argv[])
 	{
 		cout << "epoch = " << (t+1) << endl;
 		update_hmm(&hmm, seq);
-		dumpHMM(stderr, &hmm);
-		cout << "------------------------------------" << endl;
+		// dumpHMM(stderr, &hmm);
+		// cout << "------------------------------------" << endl;
 	}
 
 	/* Saving the Model */
