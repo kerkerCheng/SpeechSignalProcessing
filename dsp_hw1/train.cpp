@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 	// 		fprintf(f, "%c ", *it2);
 	// 	fprintf(f, "\n");
 	// }
-
+	return 0;
 }
 
 void alpha_calculate(vector< vector<double> >& alpha, vector<int>& seq, HMM *hmm)

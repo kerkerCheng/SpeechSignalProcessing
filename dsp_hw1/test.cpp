@@ -103,6 +103,8 @@ int main(int argc, char *argv[])
 		fprintf(fp_result, "model_0%d.txt %e\n", which_model, likelihood);
 	}
 	fclose(fp_result);
+
+	return 0;
 }
 
 double viterbi(double **del, HMM* hmm, vector<int>& seq)
