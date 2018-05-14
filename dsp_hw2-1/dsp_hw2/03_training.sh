@@ -63,7 +63,7 @@ done
 
 # increase mixture
 echo "step 06 [HHEd]: split gaussian mixture..."
-HHEd -T 2 -H $macro -H $model -M $mmf_dir lib/mixAdd2_10.hed $model_list
+HHEd -T 2 -H $macro -H $model -M $mmf_dir lib/mix2_10.hed $model_list
 
 # re-adjust mean, var
 echo "step 07 [HErest]: adjust mean, var..."
@@ -77,7 +77,7 @@ done
 
 # increase mixture
 echo "step 08 [HHEd]: split gaussian mixture..."
-HHEd -T 2 -H $macro -H $model -M $mmf_dir lib/mixAdd2_10.hed $model_list
+HHEd -T 2 -H $macro -H $model -M $mmf_dir lib/mix2_10.hed $model_list
 
 # re-adjust mean, var
 echo "step 09 [HERest]: adjust mean, var..."
