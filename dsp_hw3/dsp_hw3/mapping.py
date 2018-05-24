@@ -1,7 +1,7 @@
 import numpy as np
 from collections import defaultdict
 
-f = open('Big5-ZhuYin.map', 'r', encoding='cp950')
+f = open('Big5-ZhuYin.map', 'r', encoding='big5-hkscs')
 chs = []
 phs = []
 for line in f:
@@ -17,7 +17,7 @@ dic = defaultdict(list)
 for i, ph in enumerate(phs):
     dic[ph[0]].append(chs[i])
 
-f_out = open('ZhuYin-Big5.map', 'w', encoding='cp950')
+f_out = open('ZhuYin-Big5.map', 'w', encoding='big5-hkscs')
 sorted_key = ''.join(sorted(dic.keys()))
 
 for key in sorted_key:
