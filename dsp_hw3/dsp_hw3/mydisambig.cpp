@@ -152,39 +152,35 @@ int main(int argc, char *argv[])
             }
         }
 
+        cout << "·F·F" << endl;
+
         ////////////////////////////////////////////////////////
 
-        // double max_last_log_prob = LogP_Zero;
-        // int index_last;
-        // vector<zh> ans_sentence(all_possible_seq.size());
+        double max_last_log_prob = LogP_Zero;
+        int index_last;
+        vector<zh> ans_sentence(all_possible_seq.size());
 
-        // for(it5 =  all_possible_seq.back().begin(); it5!=all_possible_seq.back().end(); it5++)
-        // {
-        //     if(get<1>(*it5) > max_last_log_prob)
-        //     {
-        //         max_last_log_prob = get<1>(*it5);
-        //         index_last = it5 - all_possible_seq.back().begin();
-        //     }
-        // }
+        for(it5 =  all_possible_seq.back().begin(); it5!=all_possible_seq.back().end(); it5++)
+        {
+            if(get<1>(*it5) > max_last_log_prob)
+            {
+                max_last_log_prob = get<1>(*it5);
+                index_last = it5 - all_possible_seq.back().begin();
+            }
+        }
 
-        // ans_sentence.back() = get<0>(all_possible_seq.back()[index_last]);
-        // int pre_index = get<2>(all_possible_seq.back()[index_last]);
+        ans_sentence.back() = get<0>(all_possible_seq.back()[index_last]);
+        int pre_index = get<2>(all_possible_seq.back()[index_last]);
 
-        // for(int i=ans_sentence.size()-2; i>=0; i--)
-        // {
-        //     ans_sentence[i] = get<0>(all_possible_seq[i][pre_index]);
-        //     pre_index = get<2>(all_possible_seq[i][pre_index]);
-        // }
+        for(int i=ans_sentence.size()-2; i>=0; i--)
+        {
+            ans_sentence[i] = get<0>(all_possible_seq[i][pre_index]);
+            pre_index = get<2>(all_possible_seq[i][pre_index]);
+        }
 
-        // print_sentence(ans_sentence);
+        print_sentence(ans_sentence);
 
     }
-
-
-
-
-
-
 
 
     // print_vector(test_data);
@@ -341,7 +337,7 @@ double getUnigramProb(zh w1, Vocab voc, Ngram lm, double unk_Prob_log)
 void print_sentence(vector<zh>& sen)
 {
     for(vector<zh>::iterator it = sen.begin(); it != sen.end(); it++)
-        cout << (*it).zhi << ' ';
+        cout << (*it).zhi[0] << (*it).zhi[1] << ' ';
     
     cout << endl;
 }
