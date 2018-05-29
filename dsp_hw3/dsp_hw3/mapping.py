@@ -15,7 +15,8 @@ f.close()
 
 dic = defaultdict(list)
 for i, ph in enumerate(phs):
-    dic[ph[0]].append(chs[i])
+    if not (chs[i] in dic[ph[0]]):
+        dic[ph[0]].append(chs[i])
 
 f_out = open('ZhuYin-Big5.map', 'w', encoding='big5-hkscs')
 sorted_key = ''.join(sorted(dic.keys()))
