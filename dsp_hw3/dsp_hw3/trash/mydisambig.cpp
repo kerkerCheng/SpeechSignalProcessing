@@ -6,7 +6,6 @@
 #include <vector>
 #include <map>
 #include <tuple>
-#include <algorithm>
 #include "Ngram.h"
 
 using namespace std;
@@ -48,11 +47,13 @@ bool zhuyin_or_not(string in, vector<string>& zhuyin);
 void read_test_data(char* filename, vector< vector<string> >& data);
 void read_Zhuyin_Big5_map(char* filename, map<string, vector<string> >& ZB_map, vector<string>& zhuyin);
 double getBigramProb(string w1, string w2, Vocab voc, Ngram lm);
+double getUnigramProb(string w1, Vocab voc, Ngram lm, double unk_Prob_log);
 void print_sentence(vector<string>& sen);
 
 
 int main(int argc, char *argv[])
 {
+
     vector< vector<string> > test_data;
     read_test_data("testdata/1_seg.txt", test_data);
     vector<string> zhuyin;
@@ -72,118 +73,124 @@ int main(int argc, char *argv[])
         lmFile.close();
     }
 
+    
+    VocabIndex wid = voc.getIndex(Vocab_Unknown);
+    VocabIndex context[] = {Vocab_None};
+    double unk_Prob_log = lm.wordProb(wid, context);
+
+    cout << "unk_Prob_log = " << unk_Prob_log << endl;
+
     vector< vector<string> >::iterator it1;
     vector<string>::iterator it2, it3;
+    vector< vector< tuple<string, double, int> > >::iterator it4;
+    vector< tuple<string, double, int> >::iterator it5, it6;
 
     for(it1 = test_data.begin(); it1 != test_data.end(); ++it1)
     {
-        /* Searching All possible Zh */
-
         int lenth_of_sentence = (*it1).size();
-
-        vector< vector< string > > all_possible_seq;
-        vector< vector< int > > trace_back;
-        vector< vector< double > > delta;
-
+        vector< vector< tuple<string, double, int> > > all_possible_seq;
         for(it2 = (*it1).begin(); it2 != (*it1).end(); ++it2)
         {
-            if(zhuyin_or_not((*it2), zhuyin))
+            vector< tuple<string, double, int> > possibles;
+            if(zhuyin_or_not(*it2, zhuyin))
             {
-                vector<string> tmp_char;
-                vector<int> tmp_int;
-                vector<double> tmp_double;
-
-                for(it3 = (ZB_map[*it2]).begin(); it3 != (ZB_map[*it2]).end(); ++it3)
+                for(it3=ZB_map[(*it2)].begin(); it3 != ZB_map[(*it2)].end(); ++it3)
                 {
-                    tmp_char.push_back((*it3));
-                    tmp_int.push_back(0);
-                    tmp_double.push_back(0.0);
+                    VocabIndex wid1 = voc.getIndex((*it3).c_str());
+                    if(wid1 == Vocab_None)
+                        continue;
+
+                    double uni_prob = 0;
+
+                    if(it2 == (*it1).begin())
+                        uni_prob = getUnigramProb((*it3), voc, lm, unk_Prob_log);
+                        
+
+                    tuple<string, double, int> tmp((*it3), uni_prob, 0);
+                    possibles.push_back(tmp);
                 }
-                all_possible_seq.push_back(tmp_char);
-                trace_back.push_back(tmp_int);
-                delta.push_back(tmp_double);
             }
             else
             {
-                vector<string> tmp_char;
-                vector<int> tmp_int;
-                vector<double> tmp_double;
+                double uni_prob = 0;
 
-                tmp_char.push_back((*it2));
-                tmp_int.push_back(0);
-                tmp_double.push_back(0.0);
+                if(it2 == (*it1).begin())
+                    uni_prob = getUnigramProb((*it2), voc, lm, unk_Prob_log);
                 
-                all_possible_seq.push_back(tmp_char);
-                trace_back.push_back(tmp_int);
-                delta.push_back(tmp_double);
+                tuple<string, double, int> tmp((*it2), uni_prob, 0);
+                possibles.push_back(tmp);
             }
+
+            all_possible_seq.push_back(possibles);
         }
 
-        /*Initialize Viterbi Algorithm */
+        cout << "·F" << endl;
+        /////////////////////////////////////////////////////////////////////////
+        int num_word = 1;
 
-        string hol = "<s>";
-
-        for(int i=0; i<all_possible_seq[0].size(); i++)
+        for(it4 = all_possible_seq.begin(); it4 != all_possible_seq.end(); ++it4)
         {
-            VocabIndex wid1 = voc.getIndex(hol.c_str());
-            VocabIndex wid2 = voc.getIndex(all_possible_seq[0][i].c_str());
-
-            if(wid1 == Vocab_None)  //OOV
-                wid1 = voc.getIndex(Vocab_Unknown);
-            if(wid2 == Vocab_None)  //OOV
-                wid2 = voc.getIndex(Vocab_Unknown);
-
-            VocabIndex context[] = { wid1, Vocab_None };
-            delta[0][i] = lm.wordProb(wid2, context);
-        }
-        
-
-        /* Viterbi */
-
-        int aaa = 0;
-        for(int i=1; i<all_possible_seq.size(); i++)
-        {
-            for(int j=0; j<all_possible_seq[i].size(); j++)
+            if(it4 == all_possible_seq.begin())
             {
-                double max_prob = LogP_Zero;
-                double tmp = 0;
-                for(int k=0; k<all_possible_seq[i-1].size(); k++)
+                // for(it5 = (*it4).begin(); it5 != (*it4).end(); ++it5)
+                // {
+                //     get<1>(*it5) = getUnigramProb(get<0>(*it5), voc, lm);
+                //     get<2>(*it5) = 0;
+                // }
+                cout << "the word num = " << num_word << endl;
+            }
+            else if(it4 != all_possible_seq.begin())
+            {
+                for(it5 = it4->begin(); it5 != it4->end(); ++it5)
                 {
-                    {
-                        VocabIndex wid1 = voc.getIndex(all_possible_seq[i-1][k].c_str());
-                        VocabIndex wid2 = voc.getIndex(all_possible_seq[i][j].c_str());
-
-                        if(wid1 == Vocab_None)  //OOV
-                            wid1 = voc.getIndex(Vocab_Unknown);
-                        if(wid2 == Vocab_None)  //OOV
-                            wid2 = voc.getIndex(Vocab_Unknown);
-
-                        VocabIndex context[] = { wid1, Vocab_None };
-                        tmp = lm.wordProb(wid2, context) + delta[i-1][k];
-                    }
+                    double max_log_prob = LogP_Zero;
                     
-                    // tmp = getBigramProb(all_possible_seq[i-1][k], all_possible_seq[i][j], voc, lm) + delta[i-1][k];
-                    if(tmp > max_prob)
+                    // get<2>(*it5) = 0;           //initialize
+
+                    for(it6 = (it4-1)->begin(); it6 != (it4-1)->end(); ++it6)
                     {
-                        max_prob = tmp;
-                        trace_back[i][j] = k;
+                        double tmp = getBigramProb(get<0>(*it6), get<0>(*it5), voc, lm) + get<1>(*it6);
+                        if(tmp > max_log_prob)
+                        {
+                            max_log_prob = tmp;
+                            get<2>(*it5) = it6 - (it4-1)->begin();
+                        }
                     }
+                    get<1>(*it5) = max_log_prob;
                 }
-                delta[i][j] = max_prob;
+                cout << "the word num = " << num_word << endl;
+            }
+            num_word ++;
+        }
+
+        cout << "·F·F" << endl;
+
+        ////////////////////////////////////////////////////////
+
+        double max_last_log_prob = LogP_Zero;
+        int index_last;
+        vector<string> ans_sentence(all_possible_seq.size());
+
+        for(it5 =  all_possible_seq.back().begin(); it5!=all_possible_seq.back().end(); it5++)
+        {
+            if(get<1>(*it5) > max_last_log_prob)
+            {
+                max_last_log_prob = get<1>(*it5);
+                index_last = it5 - all_possible_seq.back().begin();
             }
         }
 
-        vector<string> ans_sentence(lenth_of_sentence);
-        int pre_index = 0;
+        ans_sentence.back() = get<0>(all_possible_seq.back()[index_last]);
+        int pre_index = get<2>(all_possible_seq.back()[index_last]);
 
-        for(int i=lenth_of_sentence-1; i>=0; i--)
+        for(int i=ans_sentence.size()-2; i>=0; i--)
         {
-            ans_sentence.push_back(all_possible_seq[i].at(pre_index));
-            pre_index = trace_back[i][pre_index];
+            ans_sentence[i] = get<0>(all_possible_seq[i][pre_index]);
+            pre_index = get<2>(all_possible_seq[i][pre_index]);
         }
 
-        reverse(ans_sentence.begin(), ans_sentence.end());
         print_sentence(ans_sentence);
+
     }
 }
 
@@ -256,8 +263,6 @@ void read_test_data(char* filename, vector< vector<string> >& data)
             tmp.assign(t, 2);
             line.push_back(tmp);
         }
-        string eof = "</s>";
-        line.push_back(eof);
         data.push_back(line);
     }
 }
@@ -300,13 +305,34 @@ double getBigramProb(string w1, string w2, Vocab voc, Ngram lm)
     VocabIndex wid2 = voc.getIndex(w2.c_str());
 
     // if(wid1 == Vocab_None)  //OOV
+    // {
+    //     return LogP_Zero;
     //     wid1 = voc.getIndex(Vocab_Unknown);
+    // }
     // if(wid2 == Vocab_None)  //OOV
+    // {
+    //     return LogP_Zero;
     //     wid2 = voc.getIndex(Vocab_Unknown);
+    // }
 
     VocabIndex context[] = { wid1, Vocab_None };
     cout << "bigram£¸" << w1 << "£¸" << w2 << "£¸" << endl;
     return lm.wordProb(wid2, context);
+}
+
+double getUnigramProb(string w1, Vocab voc, Ngram lm, double unk_Prob_log)
+{
+    VocabIndex wid = voc.getIndex(w1.c_str());
+
+    if(wid == Vocab_None)
+    {
+        return unk_Prob_log;
+        wid = voc.getIndex(Vocab_Unknown);
+    }
+
+    VocabIndex context[] = {Vocab_None};
+    // cout << "unigram£¸" << c << "£¸" <<lm.wordProb(wid, context) << endl;
+    return lm.wordProb(wid, context);
 }
 
 void print_sentence(vector<string>& sen)
