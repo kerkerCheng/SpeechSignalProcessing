@@ -1,7 +1,8 @@
 import numpy as np
+import sys
 from collections import defaultdict
 
-f = open('Big5-ZhuYin.map', 'r', encoding='big5-hkscs')
+f = open(sys.argv[1], 'r', encoding='big5-hkscs')
 chs = []
 phs = []
 for line in f:
@@ -18,7 +19,7 @@ for i, ph in enumerate(phs):
     if not (chs[i] in dic[ph[0]]):
         dic[ph[0]].append(chs[i])
 
-f_out = open('ZhuYin-Big5.map', 'w', encoding='big5-hkscs')
+f_out = open(sys.argv[2], 'w', encoding='big5-hkscs')
 sorted_key = ''.join(sorted(dic.keys()))
 
 for key in sorted_key:
