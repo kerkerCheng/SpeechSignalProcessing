@@ -288,8 +288,8 @@ void read_Zhuyin_Big5_map(char* filename, map<string, vector<string> >& ZB_map, 
 
 double getBigramProb(string w1, string w2, Vocab voc, Ngram lm)
 {
-    VocabIndex wid1 = voc.getIndex("¤@");
-    VocabIndex wid2 = voc.getIndex("¤G");
+    VocabIndex wid1 = voc.getIndex(w1.c_str());
+    VocabIndex wid2 = voc.getIndex(w2.c_str());
 
     // if(wid1 == Vocab_None)  //OOV
     //     wid1 = voc.getIndex(Vocab_Unknown);
