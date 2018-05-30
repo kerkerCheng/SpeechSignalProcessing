@@ -54,20 +54,19 @@ void print_sentence(vector<string>& sen);
 int main(int argc, char *argv[])
 {
     vector< vector<string> > test_data;
-    read_test_data("testdata/1_seg.txt", test_data);
+    read_test_data(argv[2], test_data);
     vector<string> zhuyin;
     generate_zhuyin_list(zhuyin);
     
     map<string, vector<string> > ZB_map;
-    read_Zhuyin_Big5_map("ZhuYin-Big5.map", ZB_map, zhuyin);
+    read_Zhuyin_Big5_map(argv[4], ZB_map, zhuyin);
 
 
     int ngram_order = 2;
     Vocab voc;
     Ngram lm(voc, ngram_order);
     {
-        const char lm_filename[] = "./bigram.lm";
-        File lmFile( lm_filename, "r" );
+        File lmFile(argv[6], "r" );
         lm.read(lmFile);
         lmFile.close();
     }
@@ -182,6 +181,7 @@ int main(int argc, char *argv[])
             pre_index = trace_back[i][pre_index];
         }
 
+        ans_sentence.push_back(hol);
         reverse(ans_sentence.begin(), ans_sentence.end());
         print_sentence(ans_sentence);
     }
@@ -204,7 +204,7 @@ void print_ZB_map(map<string, vector<string> >& ZB_map)
 {
     for(map<string, vector<string> >::iterator it1 = ZB_map.begin(); it1 != ZB_map.end(); ++it1)
     {
-        cout << (it1->first) << "---------------";
+        cout << (it1->first) << "-";
         for(vector<string>::iterator it2 = (it1->second).begin(); it2 != (it1->second).end(); ++it2)
         {
             cout << (*it2) << " ";
@@ -299,13 +299,12 @@ double getBigramProb(string w1, string w2, Vocab voc, Ngram lm)
     VocabIndex wid1 = voc.getIndex(w1.c_str());
     VocabIndex wid2 = voc.getIndex(w2.c_str());
 
-    // if(wid1 == Vocab_None)  //OOV
-    //     wid1 = voc.getIndex(Vocab_Unknown);
-    // if(wid2 == Vocab_None)  //OOV
-    //     wid2 = voc.getIndex(Vocab_Unknown);
+    if(wid1 == Vocab_None)  //OOV
+        wid1 = voc.getIndex(Vocab_Unknown);
+    if(wid2 == Vocab_None)  //OOV
+        wid2 = voc.getIndex(Vocab_Unknown);
 
     VocabIndex context[] = { wid1, Vocab_None };
-    cout << "bigram£¸" << w1 << "£¸" << w2 << "£¸" << endl;
     return lm.wordProb(wid2, context);
 }
 
