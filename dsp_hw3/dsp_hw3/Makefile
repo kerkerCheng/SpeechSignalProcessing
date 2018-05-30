@@ -24,7 +24,7 @@ $(TARGET): $(OBJ) -loolm -ldstruct -lmisc
 	$(CXX) $(CXXFLAGS) -c $<
 run:
 	@#TODO How to run your code toward different txt? 
-	@mkdir result2
+	@mkdir -p result2
 	@for i in $(shell seq 1 10) ; do \
             echo "Running $$i.txt"; \
             ./mydisambig -text testdata/$$i.txt -map $(TO) -lm $(LM) -order 2 > ./result2/$$i.txt; \

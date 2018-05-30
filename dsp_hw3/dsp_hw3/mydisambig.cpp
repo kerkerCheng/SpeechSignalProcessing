@@ -311,7 +311,13 @@ double getBigramProb(string w1, string w2, Vocab voc, Ngram lm)
 void print_sentence(vector<string>& sen)
 {
     for(vector<string>::iterator it = sen.begin(); it != sen.end(); it++)
+    {
+        if((*it) == "</s>")
+        {
+            cout << (*it);
+            break;
+        }
         cout << (*it) << ' ';
-    
+    }
     cout << endl;
 }
