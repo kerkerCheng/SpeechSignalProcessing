@@ -288,8 +288,8 @@ void read_Zhuyin_Big5_map(char* filename, map<string, vector<string> >& ZB_map, 
 
 double getBigramProb(string w1, string w2, Vocab voc, Ngram lm)
 {
-    VocabIndex wid1 = voc.getIndex(w1.c_str());
-    VocabIndex wid2 = voc.getIndex(w2.c_str());
+    VocabIndex wid1 = voc.getIndex("¤@");
+    VocabIndex wid2 = voc.getIndex("¤G");
 
     // if(wid1 == Vocab_None)  //OOV
     //     wid1 = voc.getIndex(Vocab_Unknown);
@@ -297,7 +297,7 @@ double getBigramProb(string w1, string w2, Vocab voc, Ngram lm)
     //     wid2 = voc.getIndex(Vocab_Unknown);
 
     VocabIndex context[] = { wid1, Vocab_None };
-    // cout << "bigram£¸" << w1 << "£¸" << w2 << "£¸" << endl;
+    cout << "bigram£¸" << w1 << "£¸" << w2 << "£¸" << endl;
     return lm.wordProb(wid2, context);
 }
 
@@ -309,7 +309,7 @@ double getUnigramProb(string w1, Vocab voc, Ngram lm)
         wid = voc.getIndex(Vocab_Unknown);
 
     VocabIndex context[] = {Vocab_None};
-    // cout << "unigram£¸" << c << "£¸" <<lm.wordProb(wid, context) << endl;
+    cout << "unigram£¸" << w1 << "£¸" <<lm.wordProb(wid, context) << endl;
     return lm.wordProb(wid, context);
 }
 
